@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  randomton:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: randomton
+    restart: always
+    ports:
+      - '3222:3111'
+    networks:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.randomton.rule=Host(`vrf.randomton.io`)"
+      - "traefik.http.routers.randomton.entrypoints=web"
+      - "traefik.http.services.randomton.loadbalancer.server.port=3111"
+      - "traefik.docker.network=traefik"
+      # CORS.
+      - "traefik.http.routers.randomton.middlewares=cors-randomton"
+      - "traefik.http.middlewares.cors-randomton.headers.accesscontrolallowmethods=GET,POST"
+      - "traefik.http.middlewares.cors-randomton.headers.accesscontrolallowheaders=*"
+      - "traefik.http.middlewares.cors-randomton.headers.accesscontrolalloworiginlist=https://randomton.io"
+      - "traefik.http.middlewares.cors-randomton.headers.accesscontrolmaxage=100"
+      - "traefik.http.middlewares.cors-randomton.headers.addvaryheader=true"
+
+networks:
+  traefik:
+    external: true
+
