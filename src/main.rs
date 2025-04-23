@@ -34,6 +34,7 @@ impl warp::reject::Reject for ecvrf::PKInvalid {}
 impl warp::reject::Reject for ecvrf::PiInvalid {}
 impl warp::reject::Reject for utils::IntStringInvalid {}
 impl warp::reject::Reject for utils::HexStringInvalid {}
+impl warp::reject::Reject for rng::IterationsExceeded {}
 
 #[tokio::main]
 async fn main() {
@@ -175,7 +176,10 @@ async fn handle_sha512(sha_inputs: utils::ShaInputs) -> Result<impl Reply, Rejec
     }
 }
 
-async fn handle_random(rng_inputs: rng::RngInputs) -> Result<impl Reply, Infallible> {
+async fn handle_random(rng_inputs: rng::RngInputs) -> Result<impl Reply, Rejection> {
+    if rng_inputs.iterations > 3100 {
+        return Err(warp::reject::custom(rng::IterationsExceeded));
+    }
     Ok(warp::reply::json(&SuccessMessage{ success: true, code: StatusCode::OK.as_u16(), data: rng::api_random(rng_inputs) }))
 }
 
@@ -205,6 +209,9 @@ async fn handle_rejection(err: Rejection) -> Result<impl Reply, Infallible> {
     } else if let Some(utils::HexStringInvalid) = err.find() {
         code = StatusCode::BAD_REQUEST;
         message = "Hex string is invalid.";
+    } else if let Some(rng::IterationsExceeded) = err.find() {
+        code = StatusCode::BAD_REQUEST;
+        message = "Iterations exceed maximum allowed limit of 3100.";
     } else if let Some(e) = err.find::<warp::filters::body::BodyDeserializeError>() {
         // This error happens if the body could not be deserialized correctly
         message = "BAD_REQUEST";

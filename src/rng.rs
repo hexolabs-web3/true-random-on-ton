@@ -5,6 +5,9 @@ use hex;
 
 use crate::utils;
 
+#[derive(Debug)]
+pub struct IterationsExceeded;
+
 #[derive(Debug, Serialize)]
 pub struct RngResult {
     pub ticket_number: u64,
@@ -15,7 +18,7 @@ pub struct RngResult {
 #[derive(Deserialize)]
 pub struct RngInputs {
     initial_seed: String, // Hex string.
-    iterations: usize,
+    pub iterations: usize,
     limit: u64
 }
 
