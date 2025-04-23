@@ -1,11 +1,11 @@
 version: '3.8'
 
 services:
-  randomton:
+  true_random_on_ton:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: randomton
+    container_name: true_random_on_ton
     restart: always
     ports:
       - '3222:3111'
@@ -28,4 +28,3 @@ services:
 networks:
   traefik:
     external: true
-
